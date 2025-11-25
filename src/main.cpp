@@ -67,6 +67,7 @@ const char *mqtt_heartbeat = "homeTrainerCastres/Group1-B/Heartbeat"; // MQTT to
 const char *mqtt_spo2 = "homeTrainerCastres/Group1-B/SPO2"; // MQTT topic
 const char *mqtt_temperature = "homeTrainerCastres/Group1-B/Temperature"; // MQTT topic
 const char *mqtt_reset = "homeTrainerCastres/Group1-B/reset";
+const char *mqtt_led = "homeTrainerCastres/Group1-B/led";
 const int mqtt_port = 1883;                     // MQTT port (TCP)
 String client_id = "ArduinoClient-";
 String MAC_address = "";
@@ -158,7 +159,7 @@ void connectToMQTTBroker()
       mqtt_client.subscribe(mqtt_spo2);
       mqtt_client.subscribe(mqtt_temperature);
       mqtt_client.subscribe(mqtt_reset);
-      // mqtt_client.subscribe(mqtt_led);
+      mqtt_client.subscribe(mqtt_led);
       // Publish message upon successful connection
       String message = "Hello EMQX I'm " + client_id;
       mqtt_client.publish(mqtt_topic1, message.c_str());
@@ -186,27 +187,28 @@ void mqttCallback(char *topic, byte *payload, unsigned int length)
   }
   Serial.println(messageTemp);
   Serial.println("-----------------------");
-  
-  // if(MAX30102._sHeartbeatSPO2.Heartbeat < 85)
-    // {
-    //   digitalWrite(greenLedPin, HIGH);
-    //   digitalWrite(yellowLedPin, LOW);
-    //   digitalWrite(redLedPin, LOW);
-    // }
-    // else if(MAX30102._sHeartbeatSPO2.Heartbeat < 120)
-    // {
-    //   digitalWrite(yellowLedPin, HIGH);
-    //   digitalWrite(greenLedPin, LOW);
-    //   digitalWrite(redLedPin, LOW);
-    // }
-    // else if(MAX30102._sHeartbeatSPO2.Heartbeat > 120)
-    // {
-    //   digitalWrite(redLedPin, HIGH);
-    //   digitalWrite(greenLedPin, LOW);
-    //   digitalWrite(yellowLedPin, LOW);
-    // }
 
-
+  if(String(topic) == String(mqtt_led))
+  {
+    if(messageTemp == "green")
+    {
+      digitalWrite(greenLedPin, HIGH);
+      digitalWrite(yellowLedPin, LOW);
+      digitalWrite(redLedPin, LOW);
+    }
+    else if(messageTemp == "yellow")
+    {
+      digitalWrite(yellowLedPin, HIGH);
+      digitalWrite(greenLedPin, LOW);
+      digitalWrite(redLedPin, LOW);
+    }
+    else if(messageTemp == "red")
+    {
+      digitalWrite(redLedPin, HIGH);
+      digitalWrite(greenLedPin, LOW);
+      digitalWrite(yellowLedPin, LOW);
+    }
+  }
 }
 
 void loop()
