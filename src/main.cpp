@@ -32,7 +32,7 @@ DFRobot_BloodOxygen_S_HardWareUart MAX30102(&Serial1, 9600);
 
 // ======================MQTT setting ========================
 
-const char *mqtt_ecg = "homeTrainerCastres/Group3-C/ECG"; // BPM
+const char *mqtt_ecg = "homeTrainerCastres/Group1-B/ECG"; // BPM
 
 // ====================== MQTT globals =======================
 static unsigned long lastDebugPublishTime = 0;
@@ -45,7 +45,7 @@ unsigned long lastBeat = 0;     // temps du dernier battement (ms)
 
 // Échantillonnage ECG pour MQTT (tous les 20 ms ≈ 50 Hz)
 unsigned long lastECGPublishTime = 0;
-const unsigned long ecgPublishInterval = 20; // ms
+const unsigned long ecgPublishInterval = 2000; // ms
 
 const int greenLedPin = 4;
 const int yellowLedPin = 2;
@@ -62,10 +62,11 @@ const char *password = "salutc'estmoichoupi";
 // MQTT Broker settings
 // TODO : Update with your MQTT broker settings here if needed
 const char *mqtt_broker = "broker.emqx.io";     // EMQX broker endpoint
-const char *mqtt_topic1 = "homeTrainerCastres/Group3-C/MAC"; // MQTT topic
-const char *mqtt_heartbeat = "homeTrainerCastres/Group3-C/Heartbeat"; // MQTT topic
-const char *mqtt_spo2 = "homeTrainerCastres/Group3-C/SPO2"; // MQTT topic
-const char *mqtt_temperature = "homeTrainerCastres/Group3-C/Temperature"; // MQTT topic
+const char *mqtt_topic1 = "homeTrainerCastres/Group1-B/MAC"; // MQTT topic
+const char *mqtt_heartbeat = "homeTrainerCastres/Group1-B/Heartbeat"; // MQTT topic
+const char *mqtt_spo2 = "homeTrainerCastres/Group1-B/SPO2"; // MQTT topic
+const char *mqtt_temperature = "homeTrainerCastres/Group1-B/Temperature"; // MQTT topic
+const char *mqtt_reset = "homeTrainerCastres/Group1-B/reset";
 const int mqtt_port = 1883;                     // MQTT port (TCP)
 String client_id = "ArduinoClient-";
 String MAC_address = "";
@@ -100,6 +101,11 @@ void setup()
   pinMode(yellowLedPin, OUTPUT);
   pinMode(redLedPin, OUTPUT);
   pinMode(boutonPin, INPUT_PULLUP);
+
+  digitalWrite(greenLedPin, LOW);
+  digitalWrite(yellowLedPin, LOW);
+  digitalWrite(redLedPin, LOW);
+  mqtt_client.setCallback(mqttCallback);
 }
 
 void printMacAddress()
@@ -151,6 +157,8 @@ void connectToMQTTBroker()
       mqtt_client.subscribe(mqtt_heartbeat);
       mqtt_client.subscribe(mqtt_spo2);
       mqtt_client.subscribe(mqtt_temperature);
+      mqtt_client.subscribe(mqtt_reset);
+      // mqtt_client.subscribe(mqtt_led);
       // Publish message upon successful connection
       String message = "Hello EMQX I'm " + client_id;
       mqtt_client.publish(mqtt_topic1, message.c_str());
@@ -178,24 +186,27 @@ void mqttCallback(char *topic, byte *payload, unsigned int length)
   }
   Serial.println(messageTemp);
   Serial.println("-----------------------");
-  // TODO : Add your message handling logic here
-  // For example, you can check the topic and perform actions based on the message content
-  // Example:
-  //
-  // if (String(topic) == "arduino/output")
-  // {
-  //   Serial.print("Changing output to ");
-  //   if (messageTemp == "on")
-  //   {
-  //     Serial.println("LED on");
-  //     digitalWrite(ledPin, HIGH);
-  //   }
-  //   else if (messageTemp == "off")
-  //   {
-  //     Serial.println("LED off");
-  //     digitalWrite(ledPin, LOW);
-  //   }
-  // }
+  
+  // if(MAX30102._sHeartbeatSPO2.Heartbeat < 85)
+    // {
+    //   digitalWrite(greenLedPin, HIGH);
+    //   digitalWrite(yellowLedPin, LOW);
+    //   digitalWrite(redLedPin, LOW);
+    // }
+    // else if(MAX30102._sHeartbeatSPO2.Heartbeat < 120)
+    // {
+    //   digitalWrite(yellowLedPin, HIGH);
+    //   digitalWrite(greenLedPin, LOW);
+    //   digitalWrite(redLedPin, LOW);
+    // }
+    // else if(MAX30102._sHeartbeatSPO2.Heartbeat > 120)
+    // {
+    //   digitalWrite(redLedPin, HIGH);
+    //   digitalWrite(greenLedPin, LOW);
+    //   digitalWrite(yellowLedPin, LOW);
+    // }
+
+
 }
 
 void loop()
@@ -225,24 +236,24 @@ void loop()
     message = String(MAX30102._sHeartbeatSPO2.Heartbeat);
     mqtt_client.publish(mqtt_heartbeat, message.c_str());
 
-    if(MAX30102._sHeartbeatSPO2.Heartbeat < 85)
-    {
-      digitalWrite(greenLedPin, HIGH);
-      digitalWrite(yellowLedPin, LOW);
-      digitalWrite(redLedPin, LOW);
-    }
-    else if(MAX30102._sHeartbeatSPO2.Heartbeat < 120)
-    {
-      digitalWrite(yellowLedPin, HIGH);
-      digitalWrite(greenLedPin, LOW);
-      digitalWrite(redLedPin, LOW);
-    }
-    else if(MAX30102._sHeartbeatSPO2.Heartbeat > 120)
-    {
-      digitalWrite(redLedPin, HIGH);
-      digitalWrite(greenLedPin, LOW);
-      digitalWrite(yellowLedPin, LOW);
-    }
+    // if(MAX30102._sHeartbeatSPO2.Heartbeat < 85)
+    // {
+    //   digitalWrite(greenLedPin, HIGH);
+    //   digitalWrite(yellowLedPin, LOW);
+    //   digitalWrite(redLedPin, LOW);
+    // }
+    // else if(MAX30102._sHeartbeatSPO2.Heartbeat < 120)
+    // {
+    //   digitalWrite(yellowLedPin, HIGH);
+    //   digitalWrite(greenLedPin, LOW);
+    //   digitalWrite(redLedPin, LOW);
+    // }
+    // else if(MAX30102._sHeartbeatSPO2.Heartbeat > 120)
+    // {
+    //   digitalWrite(redLedPin, HIGH);
+    //   digitalWrite(greenLedPin, LOW);
+    //   digitalWrite(yellowLedPin, LOW);
+    // }
 
 
     Serial.print("Temperature value of the board is : ");
@@ -257,18 +268,14 @@ void loop()
 
 
 
-  if (!mqtt_client.connected())
-  {
-    connectToMQTTBroker();
-  }
-  mqtt_client.loop();
 
-  unsigned long now = millis();
+
+
 
   // --------- 1) Lecture & publication ECG brut ---------
-  if (now - lastECGPublishTime >= ecgPublishInterval)
+  if (currentTime - lastECGPublishTime >= ecgPublishInterval)
   {
-    lastECGPublishTime = now;
+    lastECGPublishTime = currentTime;
 
     int ecg = analogRead(ecgPin);        // valeur ECG brute
     String ecgMessage = String(ecg);
@@ -279,14 +286,14 @@ void loop()
     Serial.println(ecg);
 
     // --------- 2) Détection du battement & BPM ---------
-    if (ecg > threshold && (now - lastBeat) > 300) // 300 ms => max ~200 BPM
+    if (ecg > threshold && (currentTime - lastBeat) > 300) // 300 ms => max ~200 BPM
     {
       int bpm = 0;
       if (lastBeat > 0)
       {
-        bpm = 60000 / (now - lastBeat); // calcul BPM
+        bpm = 60000 / (currentTime - lastBeat); // calcul BPM
       }
-      lastBeat = now;
+      lastBeat = currentTime;
 
       // Publier BPM sur ECG
       String bpmMessage = String(bpm);
@@ -298,94 +305,16 @@ void loop()
   }
 
   // Exemple : message de debug toutes les 10 s (optionnel)
-  if (now - lastDebugPublishTime >= 10000)
+  if (currentTime - lastDebugPublishTime >= 10000)
   {
-    String debugMsg = "Still alive at " + String(now / 1000) + "s";
+    String debugMsg = "Still alive at " + String(currentTime / 1000) + "s";
     mqtt_client.publish(mqtt_topic1, debugMsg.c_str());
-    lastDebugPublishTime = now;
+    lastDebugPublishTime = currentTime;
+  }
+  String reset = "Reset";
+  digitalRead(boutonPin); //rep soit 1(peut etre pas appuiller) soit 0
+  if (digitalRead(boutonPin)==0){
+    mqtt_client.publish(mqtt_reset, reset.c_str());
   }
 
-  digitalRead(boutonPin) //rep soit 1(peut etre pas appuiller) soit 0
-
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// // =========================== LOOP ==========================
-
-// void loop()
-// {
-//   if (!mqtt_client.connected())
-//   {
-//     connectToMQTTBroker();
-//   }
-//   mqtt_client.loop();
-
-//   unsigned long now = millis();
-
-//   // --------- 1) Lecture & publication ECG brut ---------
-//   if (now - lastECGPublishTime >= ecgPublishInterval)
-//   {
-//     lastECGPublishTime = now;
-
-//     int ecg = analogRead(ecgPin);        // valeur ECG brute
-//     String ecgMessage = String(ecg);
-//     mqtt_client.publish(mqtt_topic1, ecgMessage.c_str()); // ECG -> topic1
-
-//     // aussi sur le port série pour debug
-//     Serial.print("ECG: ");
-//     Serial.println(ecg);
-
-//     // --------- 2) Détection du battement & BPM ---------
-//     if (ecg > threshold && (now - lastBeat) > 300) // 300 ms => max ~200 BPM
-//     {
-//       int bpm = 0;
-//       if (lastBeat > 0)
-//       {
-//         bpm = 60000 / (now - lastBeat); // calcul BPM
-//       }
-//       lastBeat = now;
-
-//       // Publier BPM sur topic2
-//       String bpmMessage = String(bpm);
-//       mqtt_client.publish(mqtt_topic2, bpmMessage.c_str());
-
-//       Serial.print("BPM: ");
-//       Serial.println(bpm);
-//     }
-//   }
-
-//   // Exemple : message de debug toutes les 10 s (optionnel)
-//   if (now - lastDebugPublishTime >= 10000)
-//   {
-//     String debugMsg = "Still alive at " + String(now / 1000) + "s";
-//     mqtt_client.publish(mqtt_topic1, debugMsg.c_str());
-//     lastDebugPublishTime = now;
-//   }
-// }
