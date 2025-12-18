@@ -17,14 +17,33 @@ DFRobot_BloodOxygen_S_HardWareUart MAX30102(&Serial1, 9600);
 #endif
 #endif
 
-// ======================MQTT setting ========================
-const char *mqtt_ecg = "homeTrainerCastres/Group1-B/ECG"; // BPM
+// WiFi settings
+const char *ssid = "Allumettes ";
+const char *password = "salutc'estmoichoupi";
 
-// ====================== MQTT globals =======================
+// MQTT Broker settings
+const char *mqtt_broker = "broker.emqx.io";
+const char *mqtt_topic1 = "homeTrainerCastres/Group1-B/MAC";
+const char *mqtt_heartbeat = "homeTrainerCastres/Group1-B/Heartbeat";
+const char *mqtt_spo2 = "homeTrainerCastres/Group1-B/SPO2";
+const char *mqtt_temperature = "homeTrainerCastres/Group1-B/Temperature";
+const char *mqtt_reset = "homeTrainerCastres/Group1-B/reset";
+const char *mqtt_led = "homeTrainerCastres/Group1-B/led";
+const char *mqtt_ecg = "homeTrainerCastres/Group1-B/ECG";
+const int mqtt_port = 1883;
+String client_id = "ArduinoClient-";
+String MAC_address = "";
+
+
+// MQTT globals 
 static unsigned long lastDebugPublishTime = 0;
 
-// ====================== ECG settings AMÉLIORÉS =======================
-const int ecgPin = A0;
+// Pins
+const int greenLedPin = 4;
+const int yellowLedPin = 2;
+const int redLedPin = 3;
+const int boutonPin = 7;
+const int ecgPin = A0; // ECG Pin
 
 // Timing pour échantillonnage rapide
 unsigned long lastECGSampleTime = 0;
@@ -61,28 +80,6 @@ int currentBPM = 0;
 // Publication MQTT ECG (toutes les 2 secondes comme avant)
 unsigned long lastECGPublishTime = 0;
 const unsigned long ecgPublishInterval = 2000;
-
-// Pins
-const int greenLedPin = 4;
-const int yellowLedPin = 2;
-const int redLedPin = 3;
-const int boutonPin = 7;
-
-// WiFi settings
-const char *ssid = "Allumettes ";
-const char *password = "salutc'estmoichoupi";
-
-// MQTT Broker settings
-const char *mqtt_broker = "broker.emqx.io";
-const char *mqtt_topic1 = "homeTrainerCastres/Group1-B/MAC";
-const char *mqtt_heartbeat = "homeTrainerCastres/Group1-B/Heartbeat";
-const char *mqtt_spo2 = "homeTrainerCastres/Group1-B/SPO2";
-const char *mqtt_temperature = "homeTrainerCastres/Group1-B/Temperature";
-const char *mqtt_reset = "homeTrainerCastres/Group1-B/reset";
-const char *mqtt_led = "homeTrainerCastres/Group1-B/led";
-const int mqtt_port = 1883;
-String client_id = "ArduinoClient-";
-String MAC_address = "";
 
 // Other global variables
 static unsigned long lastPublishTime = 0;
@@ -286,6 +283,8 @@ void setup()
   Serial.println("=== Système ECG initialisé ===");
 }
 
+//========== Autres fonctions ==========
+
 void printMacAddress()
 {
   byte mac[6];
@@ -409,23 +408,12 @@ void loop()
     MAX30102.getHeartbeatSPO2();
     String message;
 
-    // Serial.print("SPO2 is : ");
-    // Serial.print(MAX30102._sHeartbeatSPO2.SPO2);
-    // Serial.println("%");
-    // String message = String(MAX30102._sHeartbeatSPO2.SPO2);
-    // mqtt_client.publish(mqtt_spo2, message.c_str());
-
     Serial.print("heart rate is : ");
     Serial.print(MAX30102._sHeartbeatSPO2.Heartbeat);
     Serial.println("Times/min");
     message = String(MAX30102._sHeartbeatSPO2.Heartbeat);
     mqtt_client.publish(mqtt_heartbeat, message.c_str());
 
-    // Serial.print("Temperature value of the board is : ");
-    // Serial.print(MAX30102.getTemperature_C());
-    // Serial.println(" ℃");
-    // message = String(MAX30102.getTemperature_C());
-    // mqtt_client.publish(mqtt_temperature, message.c_str());
     lastPublishTime = currentTime;
   }
 

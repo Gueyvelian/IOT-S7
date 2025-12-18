@@ -1,3 +1,4 @@
+
 [
     {
         "id": "57a3c3f5c98dbf58",
@@ -6,6 +7,372 @@
         "disabled": false,
         "info": "",
         "env": []
+    },
+    {
+        "id": "17ae38f505a3a4cb",
+        "type": "mqtt in",
+        "z": "57a3c3f5c98dbf58",
+        "name": "SPO2/bpm",
+        "topic": "homeTrainerCastres/Group1-B/Heartbeat",
+        "qos": "2",
+        "datatype": "auto-detect",
+        "broker": "b58861acd4650756",
+        "nl": false,
+        "rap": true,
+        "rh": 0,
+        "inputs": 0,
+        "x": 300,
+        "y": 460,
+        "wires": [
+            [
+                "3f50eae84dd49bb5"
+            ]
+        ]
+    },
+    {
+        "id": "23256fd0eb75eb26",
+        "type": "ui-gauge",
+        "z": "57a3c3f5c98dbf58",
+        "name": "Jauge pouls SPO2/BPM",
+        "group": "bfbb15ba0bfd474b",
+        "order": 3,
+        "value": "payload",
+        "valueType": "msg",
+        "width": 3,
+        "height": 3,
+        "gtype": "gauge-half",
+        "gstyle": "needle",
+        "title": "Jauge pouls SPO2/BPM",
+        "alwaysShowTitle": false,
+        "floatingTitlePosition": "top-left",
+        "units": "bpm/min",
+        "icon": "",
+        "prefix": "",
+        "suffix": "",
+        "segments": [
+            {
+                "from": "0",
+                "color": "#000000",
+                "text": "",
+                "textType": "label"
+            },
+            {
+                "from": "40",
+                "color": "#5cd65c",
+                "text": "",
+                "textType": "label"
+            },
+            {
+                "from": "85",
+                "color": "#ffc800",
+                "text": "",
+                "textType": "label"
+            },
+            {
+                "from": "120",
+                "color": "#ea5353",
+                "text": "",
+                "textType": "label"
+            }
+        ],
+        "min": 0,
+        "max": "160",
+        "sizeThickness": 16,
+        "sizeGap": 4,
+        "sizeKeyThickness": 8,
+        "styleRounded": true,
+        "styleGlow": false,
+        "className": "",
+        "x": 930,
+        "y": 440,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "4eabad22ca2e3a21",
+        "type": "mqtt in",
+        "z": "57a3c3f5c98dbf58",
+        "name": "ECG bpm",
+        "topic": "homeTrainerCastres/Group1-B/ECG",
+        "qos": "2",
+        "datatype": "auto-detect",
+        "broker": "b58861acd4650756",
+        "nl": false,
+        "rap": true,
+        "rh": 0,
+        "inputs": 0,
+        "x": 320,
+        "y": 540,
+        "wires": [
+            [
+                "dc2bca734e64d20b"
+            ]
+        ]
+    },
+    {
+        "id": "d679b624ca384fc3",
+        "type": "mqtt in",
+        "z": "57a3c3f5c98dbf58",
+        "name": "Reset",
+        "topic": "homeTrainerCastres/Group1-B/reset",
+        "qos": "2",
+        "datatype": "auto-detect",
+        "broker": "b58861acd4650756",
+        "nl": false,
+        "rap": true,
+        "rh": 0,
+        "inputs": 0,
+        "x": 1210,
+        "y": 220,
+        "wires": [
+            [
+                "6e3569cb8821fe7a"
+            ]
+        ]
+    },
+    {
+        "id": "6e3569cb8821fe7a",
+        "type": "function",
+        "z": "57a3c3f5c98dbf58",
+        "name": "Effacer",
+        "func": "msg.payload = [];\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1460,
+        "y": 220,
+        "wires": [
+            [
+                "59293a32f585c102"
+            ]
+        ]
+    },
+    {
+        "id": "52612bbd408617e0",
+        "type": "mqtt out",
+        "z": "57a3c3f5c98dbf58",
+        "name": "",
+        "topic": "homeTrainerCastres/Group1-B/led",
+        "qos": "",
+        "retain": "",
+        "respTopic": "",
+        "contentType": "",
+        "userProps": "",
+        "correl": "",
+        "expiry": "",
+        "broker": "b58861acd4650756",
+        "x": 1580,
+        "y": 120,
+        "wires": []
+    },
+    {
+        "id": "9d7e06f4c513c3e9",
+        "type": "function",
+        "z": "57a3c3f5c98dbf58",
+        "name": "Moyenne de 5 points",
+        "func": "console.log(\"ICI \" + msg.payload);\n\nlet arrayValues = flow.get(\"arrayValues\");\n\nlet value = msg.payload;\n\narrayValues.push(value);\n\nconsole.log(arrayValues);\n\nlet arrLength = arrayValues.length; // 20\nlet stop = arrLength - 5; // 15\n\nconsole.log(\"Longueur du tableau : \" + arrLength);\nconsole.log(\"Longueur du tableau - 5 : \" + stop);\n\nlet average = 0;\n\nif(arrLength >= 5)\n{\n    let sum = 0;\n    for (let i = arrLength - 1; i > stop; i--)\n    {\n        console.log(i);\n        console.log(arrayValues[i]);\n        sum += arrayValues[i];\n    }\n\n    average = sum/5;\n\n    console.log(average);\n\n    // Envoie au chart\n    msg.payload = average;\n\n    return msg;\n}\n\nflow.set(\"arrayValues\", arrayValues);",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "// Le code ajouté ici sera exécuté une fois\n// à chaque démarrage du noeud.\nflow.set(\"arrayValues\", new Array(0, 0, 0, 0));",
+        "finalize": "",
+        "libs": [],
+        "x": 800,
+        "y": 260,
+        "wires": [
+            [
+                "23256fd0eb75eb26",
+                "28c6beb802a83341",
+                "59293a32f585c102"
+            ]
+        ]
+    },
+    {
+        "id": "28c6beb802a83341",
+        "type": "function",
+        "z": "57a3c3f5c98dbf58",
+        "name": "Couleur LED à allumer en fonction du SPO2/BPM",
+        "func": "let bpm = msg.payload;\n\nlet ledToLight = \"\";\nif(bpm < 40)\n{\n    ledToLight = \"none\";\n}\nelse if(bpm < 85)\n{\n    ledToLight = \"green\";\n}\nelse if(bpm < 140)\n{\n    ledToLight = \"yellow\";\n}\nelse if(bpm > 140)\n{\n    ledToLight = \"red\";\n}\n\nmsg.payload = ledToLight;\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1150,
+        "y": 120,
+        "wires": [
+            [
+                "52612bbd408617e0"
+            ]
+        ]
+    },
+    {
+        "id": "3f50eae84dd49bb5",
+        "type": "function",
+        "z": "57a3c3f5c98dbf58",
+        "name": "Filtre SPO2-BPM",
+        "func": "\nif(msg.payload >= 50)\n{\n    return msg;\n}\nif (msg.payload == -1){\n    msg.payload = 0;\n    return msg;\n}\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 530,
+        "y": 460,
+        "wires": [
+            [
+                "9d7e06f4c513c3e9"
+            ]
+        ]
+    },
+    {
+        "id": "a067650195389c7f",
+        "type": "ui-gauge",
+        "z": "57a3c3f5c98dbf58",
+        "name": "Jauge pouls ECG",
+        "group": "bfbb15ba0bfd474b",
+        "order": 2,
+        "value": "payload",
+        "valueType": "msg",
+        "width": 3,
+        "height": 3,
+        "gtype": "gauge-half",
+        "gstyle": "needle",
+        "title": "Jauge pouls ECG",
+        "alwaysShowTitle": false,
+        "floatingTitlePosition": "top-left",
+        "units": "bpm/min",
+        "icon": "",
+        "prefix": "",
+        "suffix": "",
+        "segments": [
+            {
+                "from": "0",
+                "color": "#000000",
+                "text": "",
+                "textType": "label"
+            },
+            {
+                "from": "40",
+                "color": "#5cd65c",
+                "text": "",
+                "textType": "label"
+            },
+            {
+                "from": "85",
+                "color": "#ffc800",
+                "text": "",
+                "textType": "label"
+            },
+            {
+                "from": "120",
+                "color": "#ea5353",
+                "text": "",
+                "textType": "label"
+            }
+        ],
+        "min": 0,
+        "max": "160",
+        "sizeThickness": 16,
+        "sizeGap": 4,
+        "sizeKeyThickness": 8,
+        "styleRounded": true,
+        "styleGlow": false,
+        "className": "",
+        "x": 1070,
+        "y": 620,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "59293a32f585c102",
+        "type": "ui-chart",
+        "z": "57a3c3f5c98dbf58",
+        "group": "e389dabd1715d00a",
+        "name": "",
+        "label": "Les Courbes SPO2-BPM et BPM-ECG",
+        "order": 1,
+        "chartType": "line",
+        "category": "topic",
+        "categoryType": "msg",
+        "xAxisLabel": "",
+        "xAxisProperty": "",
+        "xAxisPropertyType": "timestamp",
+        "xAxisType": "time",
+        "xAxisFormat": "",
+        "xAxisFormatType": "auto",
+        "xmin": "",
+        "xmax": "",
+        "yAxisLabel": "",
+        "yAxisProperty": "payload",
+        "yAxisPropertyType": "msg",
+        "ymin": "",
+        "ymax": "",
+        "bins": 10,
+        "action": "append",
+        "stackSeries": false,
+        "pointShape": "circle",
+        "pointRadius": 4,
+        "showLegend": true,
+        "removeOlder": 1,
+        "removeOlderUnit": "3600",
+        "removeOlderPoints": "",
+        "colors": [
+            "#0095ff",
+            "#ff0000",
+            "#ff7f0e",
+            "#2ca02c",
+            "#a347e1",
+            "#d62728",
+            "#ff9896",
+            "#9467bd",
+            "#c5b0d5"
+        ],
+        "textColor": [
+            "#666666"
+        ],
+        "textColorDefault": true,
+        "gridColor": [
+            "#e5e5e5"
+        ],
+        "gridColorDefault": true,
+        "width": 6,
+        "height": 8,
+        "className": "",
+        "interpolation": "linear",
+        "x": 1470,
+        "y": 400,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "dc2bca734e64d20b",
+        "type": "function",
+        "z": "57a3c3f5c98dbf58",
+        "name": "Filtre ECG-BPM",
+        "func": "\nif(msg.payload > 50)\n{\n    return msg;\n}\n\n\nif(msg.payload < 20)\n{\n    msg.payload = 0;\n    return msg;\n}\n\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 680,
+        "y": 620,
+        "wires": [
+            [
+                "59293a32f585c102",
+                "a067650195389c7f"
+            ]
+        ]
     },
     {
         "id": "b58861acd4650756",
@@ -39,43 +406,32 @@
         "sessionExpiry": ""
     },
     {
-        "id": "b3e415aafd975bbb",
-        "type": "ui-base",
-        "name": "My Dashboard",
-        "path": "/dashboard",
-        "appIcon": "",
-        "includeClientData": true,
-        "acceptsClientConfig": [
-            "ui-notification",
-            "ui-control"
-        ],
-        "showPathInSidebar": false,
-        "headerContent": "page",
-        "navigationStyle": "default",
-        "titleBarStyle": "default",
-        "showReconnectNotification": true,
-        "notificationDisplayTime": 1,
-        "showDisconnectNotification": true,
-        "allowInstall": false
+        "id": "bfbb15ba0bfd474b",
+        "type": "ui-group",
+        "name": "SPO2 + BPM / ECG",
+        "page": "f8170f25e1a23c4e",
+        "width": 6,
+        "height": 1,
+        "order": 1,
+        "showTitle": true,
+        "className": "",
+        "visible": "true",
+        "disabled": "false",
+        "groupType": "default"
     },
     {
-        "id": "5f5f5437f2e99cee",
-        "type": "ui-theme",
-        "name": "Default Theme",
-        "colors": {
-            "surface": "#ffffff",
-            "primary": "#0094CE",
-            "bgPage": "#eeeeee",
-            "groupBg": "#ffffff",
-            "groupOutline": "#cccccc"
-        },
-        "sizes": {
-            "density": "default",
-            "pagePadding": "12px",
-            "groupGap": "12px",
-            "groupBorderRadius": "4px",
-            "widgetGap": "12px"
-        }
+        "id": "e389dabd1715d00a",
+        "type": "ui-group",
+        "name": "Graphique",
+        "page": "f8170f25e1a23c4e",
+        "width": 6,
+        "height": 1,
+        "order": 2,
+        "showTitle": true,
+        "className": "",
+        "visible": "true",
+        "disabled": "false",
+        "groupType": "default"
     },
     {
         "id": "f8170f25e1a23c4e",
@@ -114,477 +470,46 @@
         "disabled": "false"
     },
     {
-        "id": "bfbb15ba0bfd474b",
-        "type": "ui-group",
-        "name": "Group 1",
-        "page": "f8170f25e1a23c4e",
-        "width": 6,
-        "height": 1,
-        "order": 1,
-        "showTitle": true,
-        "className": "",
-        "visible": true,
-        "disabled": false,
-        "groupType": "default"
-    },
-    {
-        "id": "b404fa3b9331d95c",
-        "type": "ui-group",
-        "name": "Group 2",
-        "page": "f8170f25e1a23c4e",
-        "width": 6,
-        "height": 1,
-        "order": 2,
-        "showTitle": true,
-        "className": "",
-        "visible": true,
-        "disabled": false,
-        "groupType": "default"
-    },
-    {
-        "id": "17ae38f505a3a4cb",
-        "type": "mqtt in",
-        "z": "57a3c3f5c98dbf58",
-        "name": "",
-        "topic": "homeTrainerCastres/Group1-B/Heartbeat",
-        "qos": "2",
-        "datatype": "auto-detect",
-        "broker": "b58861acd4650756",
-        "nl": false,
-        "rap": true,
-        "rh": 0,
-        "inputs": 0,
-        "x": 220,
-        "y": 460,
-        "wires": [
-            [
-                "0c053f10ee514715",
-                "9d7e06f4c513c3e9",
-                "28c6beb802a83341"
-            ]
-        ]
-    },
-    {
-        "id": "23256fd0eb75eb26",
-        "type": "ui-gauge",
-        "z": "57a3c3f5c98dbf58",
-        "name": "Jauge pouls",
-        "group": "bfbb15ba0bfd474b",
-        "order": 2,
-        "value": "payload",
-        "valueType": "msg",
-        "width": 3,
-        "height": 3,
-        "gtype": "gauge-half",
-        "gstyle": "needle",
-        "title": "gauge",
-        "alwaysShowTitle": false,
-        "floatingTitlePosition": "top-left",
-        "units": "units",
-        "icon": "",
-        "prefix": "",
-        "suffix": "",
-        "segments": [
-            {
-                "from": "0",
-                "color": "#5cd65c",
-                "text": "",
-                "textType": "label"
-            },
-            {
-                "from": "90",
-                "color": "#ffc800",
-                "text": "",
-                "textType": "label"
-            },
-            {
-                "from": "120",
-                "color": "#ea5353",
-                "text": "",
-                "textType": "label"
-            }
+        "id": "b3e415aafd975bbb",
+        "type": "ui-base",
+        "name": "My Dashboard",
+        "path": "/dashboard",
+        "appIcon": "",
+        "includeClientData": true,
+        "acceptsClientConfig": [
+            "ui-notification",
+            "ui-control"
         ],
-        "min": 0,
-        "max": "160",
-        "sizeThickness": 16,
-        "sizeGap": 4,
-        "sizeKeyThickness": 8,
-        "styleRounded": true,
-        "styleGlow": false,
-        "className": "",
-        "x": 830,
-        "y": 500,
-        "wires": [
-            []
-        ]
+        "showPathInSidebar": false,
+        "headerContent": "page",
+        "navigationStyle": "default",
+        "titleBarStyle": "default",
+        "showReconnectNotification": true,
+        "notificationDisplayTime": 1,
+        "showDisconnectNotification": true,
+        "allowInstall": false
     },
     {
-        "id": "4eabad22ca2e3a21",
-        "type": "mqtt in",
-        "z": "57a3c3f5c98dbf58",
-        "name": "ECG poul",
-        "topic": "homeTrainerCastres/Group1-B/ECG",
-        "qos": "2",
-        "datatype": "auto-detect",
-        "broker": "b58861acd4650756",
-        "nl": false,
-        "rap": true,
-        "rh": 0,
-        "inputs": 0,
-        "x": 120,
-        "y": 540,
-        "wires": [
-            [
-                "5f4f3a6830ac7734"
-            ]
-        ]
+        "id": "5f5f5437f2e99cee",
+        "type": "ui-theme",
+        "name": "Default Theme",
+        "colors": {
+            "surface": "#dcc4a5",
+            "primary": "#cba25c",
+            "bgPage": "#ceaaa8",
+            "groupBg": "#ffffff",
+            "groupOutline": "#cccccc"
+        },
+        "sizes": {
+            "density": "default",
+            "pagePadding": "12px",
+            "groupGap": "12px",
+            "groupBorderRadius": "4px",
+            "widgetGap": "12px"
+        }
     },
     {
-        "id": "91a011a69f05e392",
-        "type": "ui-text",
-        "z": "57a3c3f5c98dbf58",
-        "group": "bfbb15ba0bfd474b",
-        "order": 1,
-        "width": 0,
-        "height": 0,
-        "name": "ECG",
-        "label": "text",
-        "format": "{{msg.payload}}",
-        "layout": "row-spread",
-        "style": false,
-        "font": "",
-        "fontSize": 16,
-        "color": "#717171",
-        "wrapText": false,
-        "className": "",
-        "value": "payload",
-        "valueType": "msg",
-        "x": 830,
-        "y": 560,
-        "wires": []
-    },
-    {
-        "id": "f2abe81f2d0d4a9f",
-        "type": "ui-chart",
-        "z": "57a3c3f5c98dbf58",
-        "group": "bfbb15ba0bfd474b",
-        "name": "",
-        "label": "chart",
-        "order": 9007199254740991,
-        "chartType": "line",
-        "category": "topic",
-        "categoryType": "msg",
-        "xAxisLabel": "",
-        "xAxisProperty": "",
-        "xAxisPropertyType": "timestamp",
-        "xAxisType": "time",
-        "xAxisFormat": "",
-        "xAxisFormatType": "auto",
-        "xmin": "",
-        "xmax": "",
-        "yAxisLabel": "",
-        "yAxisProperty": "payload",
-        "yAxisPropertyType": "msg",
-        "ymin": "",
-        "ymax": "",
-        "bins": 10,
-        "action": "append",
-        "stackSeries": false,
-        "pointShape": "circle",
-        "pointRadius": 4,
-        "showLegend": true,
-        "removeOlder": "1",
-        "removeOlderUnit": "60",
-        "removeOlderPoints": "100",
-        "colors": [
-            "#0095ff",
-            "#ff0000",
-            "#ff7f0e",
-            "#2ca02c",
-            "#a347e1",
-            "#d62728",
-            "#ff9896",
-            "#9467bd",
-            "#c5b0d5"
-        ],
-        "textColor": [
-            "#666666"
-        ],
-        "textColorDefault": true,
-        "gridColor": [
-            "#e5e5e5"
-        ],
-        "gridColorDefault": true,
-        "width": 6,
-        "height": 8,
-        "className": "",
-        "interpolation": "linear",
-        "x": 1130,
-        "y": 660,
-        "wires": [
-            []
-        ]
-    },
-    {
-        "id": "5f4f3a6830ac7734",
-        "type": "function",
-        "z": "57a3c3f5c98dbf58",
-        "name": "limitation des valeur mesuré",
-        "func": "if(msg.payload > 50)\n{\n    return msg;\n}\n",
-        "outputs": 1,
-        "timeout": 0,
-        "noerr": 0,
-        "initialize": "",
-        "finalize": "",
-        "libs": [],
-        "x": 560,
-        "y": 540,
-        "wires": [
-            [
-                "91a011a69f05e392",
-                "bbef41506504fe4a"
-            ]
-        ]
-    },
-    {
-        "id": "0c053f10ee514715",
-        "type": "function",
-        "z": "57a3c3f5c98dbf58",
-        "name": "Filtre de prise de poul",
-        "func": "\nif(msg.payload > 50)\n{\n    return msg;\n}",
-        "outputs": 1,
-        "timeout": 0,
-        "noerr": 0,
-        "initialize": "",
-        "finalize": "",
-        "libs": [],
-        "x": 560,
-        "y": 460,
-        "wires": [
-            [
-                "23256fd0eb75eb26",
-                "34aefd313a91d4b1"
-            ]
-        ]
-    },
-    {
-        "id": "d679b624ca384fc3",
-        "type": "mqtt in",
-        "z": "57a3c3f5c98dbf58",
-        "name": "Reset",
-        "topic": "homeTrainerCastres/Group1-B/reset",
-        "qos": "2",
-        "datatype": "auto-detect",
-        "broker": "b58861acd4650756",
-        "nl": false,
-        "rap": true,
-        "rh": 0,
-        "inputs": 0,
-        "x": 290,
-        "y": 660,
-        "wires": [
-            [
-                "6e3569cb8821fe7a"
-            ]
-        ]
-    },
-    {
-        "id": "6e3569cb8821fe7a",
-        "type": "function",
-        "z": "57a3c3f5c98dbf58",
-        "name": "function 1",
-        "func": "msg.payload = [];\nreturn msg;",
-        "outputs": 1,
-        "timeout": 0,
-        "noerr": 0,
-        "initialize": "",
-        "finalize": "",
-        "libs": [],
-        "x": 540,
-        "y": 660,
-        "wires": [
-            [
-                "f2abe81f2d0d4a9f"
-            ]
-        ]
-    },
-    {
-        "id": "bbef41506504fe4a",
-        "type": "function",
-        "z": "57a3c3f5c98dbf58",
-        "name": "moyenne de de 5 points",
-        "func": "const N = 5; // moyenne glissante (5 points)\n\n// Récupère les dernières valeurs\nlet buffer = context.get('buffer') || [];\nconsole.log(\"BUFFER \" + buffer);\n\n// Ajoute la nouvelle donnée\nbuffer.push(Number(msg.payload));\n\n// Garde seulement les N dernières valeurs\nif (buffer.length > N) {\n    buffer.shift();\n}\n\n// Sauvegarde dans le contexte\ncontext.set('buffer', buffer);\n\n// Calcule la moyenne\nlet sum = buffer.reduce((a, b) => a + b, 0);\nlet avg = sum / buffer.length;\n\n// Envoie au chart\nmsg.payload = avg;\nreturn msg;\n",
-        "outputs": 1,
-        "timeout": 0,
-        "noerr": 0,
-        "initialize": "",
-        "finalize": "",
-        "libs": [],
-        "x": 870,
-        "y": 620,
-        "wires": [
-            [
-                "f2abe81f2d0d4a9f"
-            ]
-        ]
-    },
-    {
-        "id": "52612bbd408617e0",
-        "type": "mqtt out",
-        "z": "57a3c3f5c98dbf58",
-        "name": "",
-        "topic": "homeTrainerCastres/Group1-B/led",
-        "qos": "",
-        "retain": "",
-        "respTopic": "",
-        "contentType": "",
-        "userProps": "",
-        "correl": "",
-        "expiry": "",
-        "broker": "b58861acd4650756",
-        "x": 900,
-        "y": 840,
-        "wires": []
-    },
-    {
-        "id": "34aefd313a91d4b1",
-        "type": "debug",
-        "z": "57a3c3f5c98dbf58",
-        "name": "debug 1",
-        "active": true,
-        "tosidebar": true,
-        "console": false,
-        "tostatus": false,
-        "complete": "payload",
-        "targetType": "msg",
-        "statusVal": "",
-        "statusType": "auto",
-        "x": 820,
-        "y": 400,
-        "wires": []
-    },
-    {
-        "id": "9d7e06f4c513c3e9",
-        "type": "function",
-        "z": "57a3c3f5c98dbf58",
-        "name": "moyenne de de 5 points",
-        "func": "console.log(\"ICI \" + msg.payload);\n\nlet arrayValues = flow.get(\"arrayValues\");\n\nlet value = msg.payload;\n\narrayValues.push(value);\n\nconsole.log(arrayValues);\n\nlet arrLength = arrayValues.length; // 20\nlet stop = arrLength - 5; // 15\n\nconsole.log(\"Longueur du tableau : \" + arrLength);\nconsole.log(\"Longueur du tableau - 5 : \" + stop);\n\nlet average = 0;\n\nif(arrLength >= 5)\n{\n    let sum = 0;\n    for (let i = arrLength - 1; i > stop; i--)\n    {\n        console.log(i);\n        console.log(arrayValues[i]);\n        sum += arrayValues[i];\n    }\n\n    average = sum/5;\n\n    console.log(average);\n\n    // Envoie au chart\n    msg.payload = average;\n\n    return msg;\n}\n\nflow.set(\"arrayValues\", arrayValues);",
-        "outputs": 1,
-        "timeout": 0,
-        "noerr": 0,
-        "initialize": "// Le code ajouté ici sera exécuté une fois\n// à chaque démarrage du noeud.\nflow.set(\"arrayValues\", new Array(90, 110, 120, 105));",
-        "finalize": "",
-        "libs": [],
-        "x": 550,
-        "y": 340,
-        "wires": [
-            [
-                "3362d36ff2dbef08"
-            ]
-        ]
-    },
-    {
-        "id": "3362d36ff2dbef08",
-        "type": "ui-chart",
-        "z": "57a3c3f5c98dbf58",
-        "group": "bfbb15ba0bfd474b",
-        "name": "Moyenne des 5 dernières valeurs de BPM",
-        "label": "Moyenne des 5 dernières valeurs de BPM",
-        "order": 9007199254740991,
-        "chartType": "line",
-        "category": "topic",
-        "categoryType": "msg",
-        "xAxisLabel": "",
-        "xAxisProperty": "",
-        "xAxisPropertyType": "timestamp",
-        "xAxisType": "time",
-        "xAxisFormat": "",
-        "xAxisFormatType": "auto",
-        "xmin": "",
-        "xmax": "",
-        "yAxisLabel": "",
-        "yAxisProperty": "payload",
-        "yAxisPropertyType": "msg",
-        "ymin": "",
-        "ymax": "",
-        "bins": 10,
-        "action": "append",
-        "stackSeries": false,
-        "pointShape": "circle",
-        "pointRadius": 4,
-        "showLegend": true,
-        "removeOlder": "1",
-        "removeOlderUnit": "60",
-        "removeOlderPoints": "100",
-        "colors": [
-            "#0095ff",
-            "#ff0000",
-            "#ff7f0e",
-            "#2ca02c",
-            "#a347e1",
-            "#d62728",
-            "#ff9896",
-            "#9467bd",
-            "#c5b0d5"
-        ],
-        "textColor": [
-            "#666666"
-        ],
-        "textColorDefault": true,
-        "gridColor": [
-            "#e5e5e5"
-        ],
-        "gridColorDefault": true,
-        "width": 6,
-        "height": 8,
-        "className": "",
-        "interpolation": "linear",
-        "x": 940,
-        "y": 340,
-        "wires": [
-            []
-        ]
-    },
-    {
-        "id": "4eba9c63c76eb270",
-        "type": "function",
-        "z": "57a3c3f5c98dbf58",
-        "name": "function 2",
-        "func": "\nreturn msg;",
-        "outputs": 1,
-        "timeout": 0,
-        "noerr": 0,
-        "initialize": "",
-        "finalize": "",
-        "libs": [],
-        "x": 600,
-        "y": 760,
-        "wires": [
-            []
-        ]
-    },
-    {
-        "id": "28c6beb802a83341",
-        "type": "function",
-        "z": "57a3c3f5c98dbf58",
-        "name": "Couleur LED à allumer en fonction du BPM",
-        "func": "let bpm = msg.payload;\n\nlet ledToLight = \"\";\n\nif(bpm < 85)\n{\n    ledToLight = \"green\";\n}\nelse if(bpm < 120)\n{\n    ledToLight = \"yellow\";\n}\nelse if(bpm > 120)\n{\n    ledToLight = \"red\";\n}\n\nmsg.payload = ledToLight;\n\nreturn msg;",
-        "outputs": 1,
-        "timeout": 0,
-        "noerr": 0,
-        "initialize": "",
-        "finalize": "",
-        "libs": [],
-        "x": 470,
-        "y": 840,
-        "wires": [
-            [
-                "52612bbd408617e0"
-            ]
-        ]
-    },
-    {
-        "id": "b837733c1f9a77a4",
+        "id": "bc72aef9bef3a6c9",
         "type": "global-config",
         "env": [],
         "modules": {
